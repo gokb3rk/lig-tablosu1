@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Puan Durumu Tablosu</title>
+<style>
+body{font-family:sans-serif;margin:0;padding:0;background:#f6f7fb}
+.container{max-width:800px;margin:30px auto;padding:20px;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.1)}
+h1{text-align:center}
+table{width:100%;border-collapse:collapse;margin-top:20px}
+th,td{padding:10px;border:1px solid #ddd;text-align:center}
+th{background:#fafafa}
+input,button{padding:6px 10px;margin:4px;border-radius:6px;border:1px solid #ccc}
+button{cursor:pointer}
+.controls{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Puan Durumu Tablosu</h1>
+<div class="controls">
+<input id="teamName" placeholder="Takım adı">
+<input id="w" type="number" min="0" placeholder="G">
+<input id="d" type="number" min="0" placeholder="B">
+<input id="l" type="number" min="0" placeholder="M">
+<input id="gf" type="number" min="0" placeholder="A">
+<input id="ga" type="number" min="0" placeholder="Y">
+<button id="addBtn">Ekle</button>
+<button id="resetBtn">Temizle</button>
+</div>
+<table id="table">
+<thead>
+<tr><th>#</th><th>Takım</th><th>O</th><th>G</th><th>B</th><th>M</th><th>A</th><th>Y</th><th>AV</th><th>P</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+<script>
+let teams = [
+  {name:'Ozan',w:6,d:0,l:11,gf:50,ga:50},
+  {name:'Gökberk',w:11,d:0,l:6,gf:50,ga:50}
+];
+function recalc(t){t.mp=t.w+t.d+t.l;t.gd=t.gf-t.ga;t.pts=t.w*3+t.d;return t;}
+function sortTeams(){teams.sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);}
+function render(){
+  sortTeams();
+  const tbody=document.querySelector('#table tbody');
+  tbody.innerHTML='';
+  teams.forEach((t,i)=>{
+    recalc(t);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${i+1}</td><td contenteditable data-field="name">${t.name}</td><td>${t.mp}</td><td contenteditable data-field="w">${t.w}</td><td contenteditable data-field="d">${t.d}</td><td contenteditable data-field="l">${t.l}</td><td contenteditable data-field="gf">${t.gf}</td><td contenteditable data-field="ga">${t.ga}</td><td>${t.gd}</td><td>${t.pts}</td>`;
+    tr.querySelectorAll('[contenteditable]').forEach(el=>el.addEventListener('blur',()=>{
+      const f=el.dataset.field;
+      if(f==='name') t.name=el.innerText.trim();
+      else t[f]=parseInt(el.innerText)||0;
+      recalc(t);
+      render();
+    }));
+    tbody.appendChild(tr);
+  });
+}
+document.getElementById('addBtn').addEventListener('click',()=>{
+  const name=document.getElementById('teamName').value.trim()||'Takım';
+  const w=parseInt(document.getElementById('w').value)||0;
+  const d=parseInt(document.getElementById('d').value)||0;
+  const l=parseInt(document.getElementById('l').value)||0;
+  const gf=parseInt(document.getElementById('gf').value)||0;
+  const ga=parseInt(document.getElementById('ga').value)||0;
+  teams.push({name,w,d,l,gf,ga});
+  render();
+  document.getElementById('teamName').value='';
+  document.getElementById('w').value='';
+  document.getElementById('d').value='';
+  document.getElementById('l').value='';
+  document.getElementById('gf').value='';
+  document.getElementById('ga').value='';
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{if(confirm('Tüm takımları silmek istiyor musunuz?')){teams=[];render();}});
+render();
+</script>
+</body>
+</html>
